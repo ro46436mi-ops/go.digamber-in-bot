@@ -2,13 +2,11 @@
   "name": "go.digamber-in-bot",
   "version": "1.0.0",
   "description": "Discord bot backend for go.digamber.in dashboard",
-  "main": "dist/bot/index.js",
+  "main": "src/bot/index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/bot/index.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/bot/index.ts",
-    "lint": "eslint src --ext .ts",
-    "format": "prettier --write src/**/*.ts"
+    "build": "echo 'No build step required for JavaScript'",
+    "start": "node src/bot/index.js",
+    "dev": "node src/bot/index.js"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
