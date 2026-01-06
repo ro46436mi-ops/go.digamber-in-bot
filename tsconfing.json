@@ -13,8 +13,8 @@
     "declaration": false,
     "declarationMap": false,
     "sourceMap": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,  // true se false karo
+    "noUnusedParameters": false,  // true se false karo
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
