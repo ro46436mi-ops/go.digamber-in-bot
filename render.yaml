@@ -2,7 +2,7 @@ services:
   - type: web
     name: go-digamber-in-bot
     env: node
-    buildCommand: npm ci && npm run build
+    buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
