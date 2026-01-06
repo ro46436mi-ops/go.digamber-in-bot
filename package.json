@@ -2,10 +2,9 @@
   "name": "go.digamber-in-bot",
   "version": "1.0.0",
   "description": "Discord bot backend for go.digamber.in dashboard",
-  "main": "src/bot/index.js",
+  "main": "bot/index.js",
   "scripts": {
-    "start": "node src/bot/index.js",
-    "dev": "node src/bot/index.js"
+    "start": "node bot/index.js"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
