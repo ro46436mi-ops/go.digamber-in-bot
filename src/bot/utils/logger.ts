@@ -1,36 +1,25 @@
-import winston from 'winston';
-import { config } from './config';
+const winston = require('winston');
 
-const { combine, timestamp, printf, colorize } = winston.format;
-
-const logFormat = printf(({ level, message, timestamp, stack }) => {
-  return `${timestamp} ${level}: ${stack || message}`;
-});
-
-export const logger = winston.createLogger({
-  level: config.logging.level,
-  format: combine(
-    colorize(),
-    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    winston.format.errors({ stack: true }),
-    logFormat
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message }) => {
+      return `${timestamp} ${level}: ${message}`;
+    })
   ),
   transports: [
     new winston.transports.Console(),
     new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
     new winston.transports.File({ filename: 'logs/combined.log' })
-  ],
-  exceptionHandlers: [
-    new winston.transports.File({ filename: 'logs/exceptions.log' })
-  ],
-  rejectionHandlers: [
-    new winston.transports.File({ filename: 'logs/rejections.log' })
   ]
 });
 
-// Create a stream object for Morgan
-export const stream = {
-  write: (message: string) => {
-    logger.info(message.trim());
+module.exports = {
+  logger,
+  stream: {
+    write: (message) => {
+      logger.info(message.trim());
+    }
   }
 };
