@@ -1,144 +1,66 @@
-import { 
-  SlashCommandBuilder, 
-  PermissionFlagsBits,
-  ChatInputCommandInteraction,
-  EmbedBuilder
-} from 'discord.js';
-import { PremiumService } from '../services/PremiumService';
-import { logger } from '../utils/logger';
+const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 
-const premiumService = new PremiumService();
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('premium')
+    .setDescription('Manage premium features')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('status')
+        .setDescription('Check premium status for this server')
+    )
+    .addSubcommand(subcommand =>
+      subcommand
+        .setName('features')
+        .setDescription('View premium features')
+    ),
 
-export const data = new SlashCommandBuilder()
-  .setName('premium')
-  .setDescription('Manage premium features')
-  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-  .addSubcommand(subcommand =>
-    subcommand
-      .setName('status')
-      .setDescription('Check premium status for this server')
-  )
-  .addSubcommand(subcommand =>
-    subcommand
-      .setName('features')
-      .setDescription('View premium features')
-  );
-
-export async function execute(interaction: ChatInputCommandInteraction): Promise<void> {
-  await interaction.deferReply({ ephemeral: true });
-
-  const subcommand = interaction.options.getSubcommand();
-  const guild = interaction.guild!;
-
-  try {
+  async execute(interaction) {
+    await interaction.deferReply({ ephemeral: true });
+    
+    const subcommand = interaction.options.getSubcommand();
+    const guild = interaction.guild;
+    
+    if (!guild) {
+      await interaction.editReply('This command can only be used in a server.');
+      return;
+    }
+    
     switch (subcommand) {
       case 'status':
-        await showPremiumStatus(interaction, guild);
+        const embed = new EmbedBuilder()
+          .setTitle(`Premium Status: ${guild.name}`)
+          .setColor(0x5865F2)
+          .setDescription('Premium features are managed through the dashboard.')
+          .addFields(
+            { name: 'Dashboard', value: `${process.env.DASHBOARD_BASE_URL || 'https://go.digamber.in'}/dashboard/${guild.id}`, inline: false },
+            { name: 'Note', value: 'Check premium status and upgrade on the dashboard.', inline: false }
+          )
+          .setTimestamp();
+        
+        await interaction.editReply({ embeds: [embed] });
         break;
-      
+        
       case 'features':
-        await showPremiumFeatures(interaction, guild);
+        const featuresEmbed = new EmbedBuilder()
+          .setTitle('Premium Features')
+          .setColor(0x00FF00)
+          .setDescription('Upgrade to unlock these exclusive features:')
+          .addFields(
+            { name: '🎨 Advanced Templates', value: 'Create templates with multiple embeds, buttons, and select menus', inline: true },
+            { name: '⏰ Scheduled Messages', value: 'Schedule messages to be sent at specific times', inline: true },
+            { name: '🤖 Advanced Automation', value: 'Set up complex role and message automation', inline: true },
+            { name: '📊 Advanced Analytics', value: 'Detailed message and member analytics', inline: true },
+            { name: '🔐 Priority Support', value: 'Get help faster with priority support', inline: true },
+            { name: '⚡ Unlimited Templates', value: 'No limits on number of templates', inline: true }
+          )
+          .setFooter({ 
+            text: 'Visit the dashboard to upgrade and unlock all features!' 
+          });
+        
+        await interaction.editReply({ embeds: [featuresEmbed] });
         break;
-      
-      default:
-        await interaction.editReply('Unknown subcommand.');
     }
-  } catch (error) {
-    logger.error('Premium command failed:', error);
-    await interaction.editReply('An error occurred. Please try again.');
   }
-}
-
-async function showPremiumStatus(
-  interaction: ChatInputCommandInteraction,
-  guild: any
-): Promise<void> {
-  const premium = await premiumService.getGuildPremium(guild.id);
-
-  const embed = new EmbedBuilder()
-    .setTitle(`Premium Status: ${guild.name}`)
-    .setColor(premium ? 0x00FF00 : 0xFF0000);
-
-  if (premium) {
-    const endDate = premium.currentPeriodEnd.toLocaleDateString();
-    embed.setDescription(`✅ Premium is **active** for this server!`)
-      .addFields(
-        { name: 'Tier', value: premium.tier.toUpperCase(), inline: true },
-        { name: 'Renews/Expires', value: endDate, inline: true },
-        { name: 'Status', value: premium.status.toUpperCase(), inline: true }
-      );
-    
-    if (premium.tier === 'lifetime') {
-      embed.addFields({ 
-        name: 'Note', 
-        value: 'Lifetime premium never expires!' 
-      });
-    }
-  } else {
-    embed.setDescription('❌ Premium is **not active** for this server.')
-      .addFields(
-        { 
-          name: 'Get Premium', 
-          value: 'Visit the dashboard to upgrade: https://go.digamber.in/dashboard/' + guild.id 
-        }
-      );
-  }
-
-  await interaction.editReply({ embeds: [embed] });
-}
-
-async function showPremiumFeatures(
-  interaction: ChatInputCommandInteraction,
-  guild: any
-): Promise<void> {
-  const isPremium = await premiumService.isGuildPremium(guild.id);
-
-  const embed = new EmbedBuilder()
-    .setTitle('Premium Features')
-    .setColor(0x5865F2)
-    .setDescription('Upgrade to unlock these features:')
-    .addFields(
-      { 
-        name: '🎨 Advanced Templates', 
-        value: 'Create templates with multiple embeds, buttons, and select menus', 
-        inline: true 
-      },
-      { 
-        name: '⏰ Scheduled Messages', 
-        value: 'Schedule messages to be sent at specific times', 
-        inline: true 
-      },
-      { 
-        name: '🤖 Advanced Automation', 
-        value: 'Set up complex role and message automation', 
-        inline: true 
-      },
-      { 
-        name: '📊 Advanced Analytics', 
-        value: 'Detailed message and member analytics', 
-        inline: true 
-      },
-      { 
-        name: '🔐 Priority Support', 
-        value: 'Get help faster with priority support', 
-        inline: true 
-      },
-      { 
-        name: '⚡ Unlimited Templates', 
-        value: 'No limits on number of templates', 
-        inline: true 
-      }
-    )
-    .setFooter({ 
-      text: isPremium ? '✅ All features are unlocked!' : '🔒 Upgrade to unlock all features' 
-    });
-
-  if (!isPremium) {
-    embed.addFields({
-      name: 'Get Premium',
-      value: `Visit the dashboard to upgrade:\nhttps://go.digamber.in/dashboard/${guild.id}`
-    });
-  }
-
-  await interaction.editReply({ embeds: [embed] });
-}
+};
