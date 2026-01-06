@@ -4,7 +4,6 @@
   "description": "Discord bot backend for go.digamber.in dashboard",
   "main": "src/bot/index.js",
   "scripts": {
-    "build": "echo 'No build step required for JavaScript'",
     "start": "node src/bot/index.js",
     "dev": "node src/bot/index.js"
   },
